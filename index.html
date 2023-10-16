@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UnoRemastered</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+<div class="px-4 py-5 my-5 text-center">
+    <!--img class="d-block mx-auto mb-4" src="/assets/uno_icon.png" alt="" width="72" height="57"-->
+    <h1 class="display-5 fw-bold text-body-emphasis">UnoRemastered</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">Dies ist das UNO Spiel, nur online! Wenn du Glück hast, läuft sogar das Leaderboard!</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="window.location.href = 'main.html'">Start Game</button>
+        </div>
+    </div>
+</div>
+<div class="divider"></div>
+<div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center" id="leaderboard">
+    <div class="list-group">
+        <a id="root"></a>
+    </div>
+
+</div>
+</body>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("leaderboard") == null) {
+            const noPlayers = {
+                "players": [
+                    {
+                        "tag": "sus",
+                        "score": "1",
+                        "date": Date.now()
+                    }
+                ]
+            }
+            localStorage.setItem("leaderboard", JSON.stringify(noPlayers))
+        }
+
+        const leaderboard = JSON.parse(localStorage.getItem("leaderboard"))["players"];
+
+        const group = document.querySelector("#root")
+
+        for (let item of leaderboard) {
+            group.insertAdjacentHTML("beforeend", "<a href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\">"+item["tag"]+"</h6><small class=\"opacity-75 text-nowrap\">Punkte: "+item["score"]+"</small></div><small class=\"opacity-50 text-nowrap\">"+formatDate(new Date(item["date"]))+"</small></div></a>")
+        }
+    }
+    function formatDate(date) {
+        let dayOfMonth = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
+        let hour = date.getHours();
+        let minutes = date.getMinutes();
+        let diffMs = new Date() - date;
+        let diffSec = Math.round(diffMs / 1000);
+        let diffMin = diffSec / 60;
+        let diffHour = diffMin / 60;
+
+        // formatting
+        year = year.toString().slice(-2);
+        month = month < 10 ? '0' + month : month;
+        dayOfMonth = dayOfMonth < 10 ? '0' + dayOfMonth : dayOfMonth;
+        hour = hour < 10 ? '0' + hour : hour;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+
+        if (diffSec < 1) {
+            return 'right now';
+        } else if (diffMin < 1) {
+            return `${Math.round(diffSec)} sec. ago`
+        } else if (diffHour < 1) {
+            return `${Math.round(diffMin)} min. ago`
+        } else {
+            return `${dayOfMonth}.${month}.${year} ${hour}:${Math.round(minutes)}`
+        }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</html>
