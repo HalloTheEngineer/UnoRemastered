@@ -20,8 +20,9 @@
 </div>
 <div class="divider"></div>
 <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center" id="leaderboard">
+    <h2>Leaderboard</h2>
     <div class="list-group">
-        <a id="root"></a>
+        <ul id="root"></ul>
     </div>
 
 </div>
@@ -30,13 +31,7 @@
     window.onload = function () {
         if (localStorage.getItem("leaderboard") == null) {
             const noPlayers = {
-                "players": [
-                    {
-                        "tag": "sus",
-                        "score": "1",
-                        "date": Date.now()
-                    }
-                ]
+                "players": []
             }
             localStorage.setItem("leaderboard", JSON.stringify(noPlayers))
         }
@@ -44,9 +39,9 @@
         const leaderboard = JSON.parse(localStorage.getItem("leaderboard"))["players"];
 
         const group = document.querySelector("#root")
-
+        if (leaderboard.length === 0) group.insertAdjacentHTML("beforeend", "<li href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\"><strong>Be the first one to set a score!</strong></h6><small class=\"opacity-75 text-nowrap\"></small></div><small class=\"opacity-50 text-nowrap\"></small></div></li>")
         for (let item of leaderboard) {
-            group.insertAdjacentHTML("beforeend", "<a href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\">"+item["tag"]+"</h6><small class=\"opacity-75 text-nowrap\">Punkte: "+item["score"]+"</small></div><small class=\"opacity-50 text-nowrap\">"+formatDate(new Date(item["date"]))+"</small></div></a>")
+            group.insertAdjacentHTML("beforeend", "<li href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\">"+item["tag"]+"</h6><small class=\"opacity-75 text-nowrap\">Punkte: "+item["score"]+"</small></div><small class=\"opacity-50 text-nowrap\">"+formatDate(new Date(item["date"]))+"</small></div></li>");
         }
 
     }

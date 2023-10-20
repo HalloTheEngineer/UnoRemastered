@@ -1,17 +1,27 @@
+//Parameters
 let tag1 = "";
 let tag2 = "";
 let cardCount = 7;
+//Handler Classes
 let gameHandler;
 let cardHandler;
 let turnHandler;
 let colorHandler;
-let allCards = [];
+//Values
 let currentPlayer;
 let shownCard;
 let forcedColorCache;
 let forcedColor;
+//Arrays
+let allCards = [];
 let cardsPlayerOne = [];
 let cardsPlayerTwo = [];
+let currentLeaderboard = [];
+//Style
+let deckPlayer1;
+let deckPlayer2;
+//HardCoded Features
+let memeMode = false;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
@@ -35,9 +45,15 @@ window.onload = () => {
 
 //JQuery - Events
 $(document).ready(() => {
+    deckPlayer1 = new bootstrap.Offcanvas("#offT");
+    deckPlayer2 = new bootstrap.Offcanvas("#offB");
     $("#deck1").on({
         click: () => {
-            new bootstrap.Offcanvas("#offT").show();
+            deckPlayer1.show();
+        },
+        dragstart: (event) => {
+            event.preventDefault();
+            event.stopPropagation();
         },
         dragover: (event) => {
             event.preventDefault();
@@ -58,7 +74,11 @@ $(document).ready(() => {
     })
     $("#deck2").on({
         click: () => {
-            new bootstrap.Offcanvas("#offB").show();
+            deckPlayer2.show();
+        },
+        dragstart: (event) => {
+          event.preventDefault();
+          event.stopPropagation();
         },
         dragover: (event) => {
             event.preventDefault();
@@ -79,20 +99,19 @@ $(document).ready(() => {
     })
     $("#chooseRed").on("click", () => {
         colorHandler.handleButton(Card.redColor);
-    })
+    });
     $("#chooseYellow").on("click", () => {
         colorHandler.handleButton(Card.yellowColor);
-    })
+    });
     $("#chooseGreen").on("click", () => {
         colorHandler.handleButton(Card.greenColor);
-    })
+    });
     $("#chooseBlue").on("click", () => {
         colorHandler.handleButton(Card.blueColor);
-    })
+    });
+});
 
-})
-
-//Classes
+//Classes & Logic
 class GameHandler {
     constructor() {
     }
@@ -103,9 +122,46 @@ class GameHandler {
 
         $("#offTTitle").html(`Player: ${tag1}`);
         $("#offBTitle").html(`Player: ${tag2}`);
+        if (memeMode) $("#soypoint").css("display", "block");
 
         $("#startingPlayer").html(`<strong>${turnHandler.getPlayerTag(currentPlayer)}</strong> is going to start!`)
         new bootstrap.Modal("#startingInfo").show();
+    }
+    endGame(player) {
+        if (localStorage.getItem("leaderboard") == null) {
+            const noPlayers = {
+                "players": []
+            }
+            localStorage.setItem("leaderboard", JSON.stringify(noPlayers));
+        }
+        const listValue = JSON.parse(localStorage.getItem("leaderboard"));
+        listValue["players"].forEach(value => currentLeaderboard.push(LeaderboardEntry.from(value)));
+        let winner = fetchWinnerTag(player);
+        let existing = false;
+        for (let entry of currentLeaderboard) {
+            if (entry.tag === winner) {
+                entry.score = parseInt(entry.score) + 1;
+                entry.date = Date.now();
+                existing = true;
+                break;
+            }
+        }
+        if (!existing) {
+            currentLeaderboard.push(new LeaderboardEntry(winner, 1, Date.now()));
+        }
+        let newList = {
+            "players": []
+        }
+        currentLeaderboard.sort((a, b) => b.score - a.score);
+        currentLeaderboard.forEach(value => newList["players"].push({
+            "tag": value.tag,
+            "score": value.score,
+            "date": value.date
+        }));
+
+        localStorage.setItem("leaderboard", JSON.stringify(newList));
+
+        window.location.href = "index.html";
     }
 }
 class CardHandler {
@@ -171,51 +227,80 @@ class CardHandler {
             new bootstrap.Modal("#colorPicker").show();
             await colorHandler.awaitColorPick().then(value => {
                 forcedColor = value
-                console.log(value)
+                console.log(`${value} was force-picked by player ${player}`);
             });
         }
 
         if (!this.validateAction(card, player, forcedColor)) return;
 
+        player === 1 ? deckPlayer1.hide() : deckPlayer2.hide();
         this.updateShownCard(card);
         $(`#${card.uuid}`).parent().remove();
+
+        if (this.getCardCountOfPlayer(player) === 0) {
+            gameHandler.endGame(player);
+        }
     }
     validateAction(card, player, forcedColor) {
         switch (shownCard.getType()) {
             case "regular":
                 if ((!card.hasColor() || shownCard.getColor() === card.getColor()) || (shownCard.getNumber() === card.getNumber())) {
-                    turnHandler.next();
+                    if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
             case "skip":
-                if (shownCard.getColor() === card.getColor() || !card.hasColor()) return true;
-                break;
+                if (shownCard.getColor() === card.getColor() || !card.hasColor() || shownCard.getType() === card.getType()) {
+                    if (this.handleCardType(card, player)) turnHandler.next();
+                    return true;
+                } else return false;
             case "mirror":
-                if (shownCard.getColor() === card.getColor() || !card.hasColor()) return true;
-                break;
+                if (shownCard.getColor() === card.getColor() || !card.hasColor() || shownCard.getType() === card.getType()) {
+                    if (this.handleCardType(card, player)) turnHandler.next();
+                    return true;
+                } else return false;
             case "drawTwo":
-                if (shownCard.getType() !== "drawTwo" || shownCard.getColor() !== card.getColor()) {
-                    for (let i = 0; i < 2; i++) {
-                        this.drawCard(turnHandler.getNextPlayer(player))
-                    }
-                    turnHandler.next();
+                if (shownCard.getColor() === card.getColor() || !card.hasColor() || card.getType() === shownCard.getType()) {
+                    if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
             case "drawFour":
                 if (forcedColor !== undefined && card.getColor() === forcedColor) {
-                    for (let i = 0; i < 4; i++) {
-                        this.drawCard(turnHandler.getNextPlayer(player));
-                        console.log("add")
-                    }
-                    turnHandler.next();
+                    if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
             case "special":
                 if (card.getColor() === forcedColor) {
-                    turnHandler.next();
+                    if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
         }
+    }
+    handleCardType(card, player) { //returns: do switch turn
+        switch (card.getType()) {
+            case "mirror":
+                return false;
+            case "skip":
+                return false;
+            case "drawTwo":
+                for (let i = 0; i < 2; i++) {
+                    this.drawCard(turnHandler.getNextPlayer(player))
+                }
+                return true;
+            case "drawFour":
+                for (let i = 0; i < 4; i++) {
+                    this.drawCard(turnHandler.getNextPlayer(player))
+                }
+                return true;
+            default:
+                return true;
+        }
+    }
+    getCardCountOfPlayer(player) {
+        if (player === 1) {
+            return $("#deck1Cards li").length;
+        } else if (player === 2) {
+            return $("#deck2Cards li").length;
+        } else return null;
     }
 }
 class ColorHandler {
@@ -229,7 +314,7 @@ class ColorHandler {
                     resolve(forcedColorCache);
                     forcedColorCache = null;
                 }
-            }, 50); //20 TPS
+            }, 50); //20 TPS - Ticks/Checks per second
         })
     }
 }
@@ -258,11 +343,19 @@ class TurnHandler {
     }
     updateBorder() {
         if (currentPlayer === 1) {
-            $("#deck1").css("border-color", "slategray");
-            $("#deck2").css("border-color", "transparent");
+            if (memeMode) {
+                $("#soypointimg").css("transform", "scaleX(1)");
+            } else {
+                $("#deck1").css("border-color", "slategray");
+                $("#deck2").css("border-color", "transparent");
+            }
         } else if (currentPlayer === 2) {
-            $("#deck1").css("border-color", "transparent");
-            $("#deck2").css("border-color", "slategray");
+            if (memeMode) {
+                $("#soypointimg").css("transform", "scaleX(-1)");
+            } else {
+                $("#deck1").css("border-color", "transparent");
+                $("#deck2").css("border-color", "slategray");
+            }
         }
     }
 }
@@ -339,6 +432,16 @@ class Card {
         } else return null;
     }
 }
+class LeaderboardEntry {
+    constructor(tag, score, unix) {
+        this.tag = tag;
+        this.score = score;
+        this.date = unix;
+    }
+    static from(json){
+        return Object.assign(new LeaderboardEntry(), json);
+    }
+}
 //Helper functions
 function isValidUsername(str) {
     return /^[a-zA-Z0-9]+([a-zA-Z0-9]([_\- ])[a-zA-Z0-9])*[a-zA-Z0-9]+$/.test(str)
@@ -355,4 +458,9 @@ function moveItem(source, target, item) {
 }
 function generateUUID() {
     return crypto.randomUUID();
+}
+function fetchWinnerTag(player) {
+    if (player === 1) return tag1;
+    else if (player === 2) return tag2;
+    else return null;
 }

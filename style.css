@@ -43,6 +43,15 @@ body {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+.list-group {
+    width: 400px;
+    border-left: 3px #85929e groove;
+}
+#root {
+    height: 229px;
+    overflow: hidden;
+    overflow-y: scroll;
+}
 #loader {
     width: 100%;
     height: 100%;
@@ -70,7 +79,7 @@ body {
     scale: 30%;
 
     border: 3px solid transparent;
-    border-radius: 30px;
+    border-radius: 50%;
 }
 #deck2 {
     position: absolute;
@@ -85,7 +94,7 @@ body {
     transform: rotate(-30deg);
 
     border: 3px solid transparent;
-    border-radius: 30px;
+    border-radius: 50%;
 }
 #stack {
     position: absolute;
@@ -108,6 +117,18 @@ body {
     width: 137px;
     background-image: url('assets/uno_spritesheet.png');
     background-position: 0 -1028px;
+}
+#soypoint {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    margin-left: 45%;
+}
+#soypoint img {
+    position: relative;
+    display: block;
+    float: left;
+    scale: 60%;
 }
 
 .align-below {
