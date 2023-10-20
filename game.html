@@ -17,52 +17,60 @@
 <img src="assets/uno_card_stack_big.png" alt="Stack" id="stack">
 <div id="gameStack"></div>
 
-<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasTop" aria-labelledby="offcanvasBottomLabel">
+<div class="offcanvas offcanvas-top" tabindex="-1" id="offT" aria-labelledby="offTLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasTopLabel">Offcanvas bottom</h5>
+        <h3 class="offcanvas-title" id="offTTitle">Player 1</h3>
+        <h4 class="offcanvas-title">Choose card to play</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body small">
-
+        <div class="scroll-container">
+            <ul id="deck1Cards"></ul>
+        </div>
     </div>
 </div>
-<div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
+<div class="offcanvas offcanvas-bottom" tabindex="-1" id="offB" aria-labelledby="offBLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasBottomLabel">Offcanvas bottom</h5>
+        <h3 class="offcanvas-title" id="offBTitle">Player 2</h3>
+        <h4 class="offcanvas-title">Choose card to play</h4>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body small">
-
+        <div class="scroll-container">
+            <ul id="deck2Cards"></ul>
+        </div>
     </div>
 </div>
-<!--section class="py-5 text-center container">
-    <div class="album py-5 bg-body-tertiary">
-        <div class="container">
-            <div class="row row-cols-1 row-cols-sm-4 row-cols-md-5 g-3">
-                <div class="col"></div>
-                <div class="col"></div>
-                <div class="col">
-
-                    <div class="card shadow-sm">
-                        <img src="assets/uno_card_back.png" alt="Card">
-                    </div>
-
-                </div>
+<div class="modal fade" id="startingInfo" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Game Instructions</h3>
+            </div>
+            <div class="modal-body">
+                <p>Modal body text goes here.</p>
+                <p id="startingPlayer"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Start game!</button>
             </div>
         </div>
     </div>
-</section>
-
-<div class="divider"></div>
-
-<section class="py-5 text-center container">
-    <div class="album py-5 bg-body-tertiary"></div>
-</section>
-
-<div class="divider"></div>
-
-<section class="py-5 text-center container">
-    <div class="album py-5 bg-body-tertiary"></div>
-</section-->
+</div>
+<div class="modal fade" id="colorPicker" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Choose color:</h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary dot dot-red" data-bs-dismiss="modal" id="chooseRed">Red</button>
+                <button type="button" class="btn btn-primary dot dot-yellow" data-bs-dismiss="modal" id="chooseYellow">Yellow</button>
+                <button type="button" class="btn btn-primary dot dot-green" data-bs-dismiss="modal" id="chooseGreen">Green</button>
+                <button type="button" class="btn btn-primary dot dot-blue" data-bs-dismiss="modal" id="chooseBlue">Blue</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -68,6 +68,9 @@ body {
     margin-bottom: auto;
     margin-right: auto;
     scale: 30%;
+
+    border: 3px solid transparent;
+    border-radius: 30px;
 }
 #deck2 {
     position: absolute;
@@ -80,6 +83,9 @@ body {
     margin-left: auto;
     scale: 30%;
     transform: rotate(-30deg);
+
+    border: 3px solid transparent;
+    border-radius: 30px;
 }
 #stack {
     position: absolute;
@@ -98,14 +104,50 @@ body {
     right: 0;
     margin: auto auto 13%;
 
-    height: 207px;
+    height: 206px;
     width: 137px;
     background-image: url('assets/uno_spritesheet.png');
     background-position: 0 -1028px;
 }
 
-.align-below{
+.align-below {
     height:200px;
     position: relative;
     top: 315px;
+}
+.gallery-entry-pl1, .gallery-entry-pl2 {
+    height: 206px;
+    width: 137px;
+}
+div.scroll-container {
+    overflow: auto;
+    white-space: nowrap;
+    padding: 10px;
+}
+
+div.scroll-container li {
+    padding: 10px;
+}
+ul li {
+    list-style-type: none;
+    display: inline-flex;
+    float: left;
+}
+.dot {
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dot-red {
+    background-color: red;
+}
+.dot-yellow {
+    background-color: yellow;
+}
+.dot-green {
+    background-color: green;
+}
+.dot-blue {
+    background-color: blue;
 }
