@@ -1,3 +1,16 @@
+/*
+WICHTIG: Für die Funktionalität des Leaderboards muss die Website auf einem Server gehostet werden,
+da der lokale Speicher hier für alle auf dem Server geöffneten Seiten gilt. Das Spielen ist auch ohne Server möglich,
+wobei auf das Leaderboard verzichtet werden muss.
+
+Aufbau des Codes:
+    1. Variablen
+    2. Startvorbereitungen
+    3. JQuery Events
+    4. Classes und Logik
+    5. Utility Funktionen
+ */
+
 //Parameters
 let tag1 = "";
 let tag2 = "";
@@ -21,7 +34,8 @@ let currentLeaderboard = [];
 let deckPlayer1;
 let deckPlayer2;
 //HardCoded Features
-let memeMode = false; //TODO: Kennzeichnung der ForcedColor, Optionales Zurückmischen der benutzten Karten, Game Instructions, Forfeiting
+let memeMode = false;
+//TODO: Game Instructions; Winning/Loosing animation w/ forfeit impl; leaderboard images; config gui > Stacking, meme mode, etc.;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
@@ -30,11 +44,10 @@ window.onload = () => {
         tag2 = params.get("tag2");
         cardCount = params.get("cardcount");
     } else {
-        window.location.href = "config.html?rejected=true"
+        window.location.href = "config.html?rejected=true";
     }
 
     $("#loader").fadeOut("center");
-
     colorHandler = new ColorHandler();
     turnHandler = new TurnHandler();
     turnHandler.init();
@@ -45,8 +58,10 @@ window.onload = () => {
 
 //JQuery - Events
 $(document).ready(() => {
+    //deck registration
     deckPlayer1 = new bootstrap.Offcanvas("#offT");
     deckPlayer2 = new bootstrap.Offcanvas("#offB");
+    //deck player 1 - card drawing, showing the deck
     $("#deck1").on({
         click: () => {
             deckPlayer1.show();
@@ -71,7 +86,8 @@ $(document).ready(() => {
                 turnHandler.next();
             }
         }
-    })
+    });
+    //deck player 2 - card drawing, showing the deck
     $("#deck2").on({
         click: () => {
             deckPlayer2.show();
@@ -96,7 +112,15 @@ $(document).ready(() => {
                 turnHandler.next();
             }
         }
-    })
+    });
+    //forfeit events
+    $("#forfeit-p1").on("click", () => {
+       gameHandler.endGame(2);
+    });
+    $("#forfeit-p2").on("click", () => {
+        gameHandler.endGame(1);
+    });
+    //color picker events
     $("#chooseRed").on("click", () => {
         colorHandler.handleButton(Card.redColor);
     });
@@ -112,9 +136,13 @@ $(document).ready(() => {
 });
 
 //Classes & Logic
+/**
+ *  Handles the startup and end logic
+ */
 class GameHandler {
-    constructor() {
-    }
+    /**
+     * Handles the card distribution and style customization
+     */
     startGame() {
         cardHandler.collectCards();
         cardHandler.distributeCards();
@@ -124,9 +152,14 @@ class GameHandler {
         $("#offBTitle").html(`Player: ${tag2}`);
         if (memeMode) $("#soypoint").css("display", "block");
 
-        $("#startingPlayer").html(`<strong>${turnHandler.getPlayerTag(currentPlayer)}</strong> is going to start!`)
+        $("#startingPlayer").html(`<strong>${fetchTag(currentPlayer)}</strong> is going to start!`)
         new bootstrap.Modal("#startingInfo").show();
     }
+
+    /**
+     * Handles the leaderboard editing and redirection to index.html
+     * @param player The player who won.
+     */
     endGame(player) {
         if (localStorage.getItem("leaderboard") == null) {
             const noPlayers = {
@@ -136,7 +169,7 @@ class GameHandler {
         }
         const listValue = JSON.parse(localStorage.getItem("leaderboard"));
         listValue["players"].forEach(value => currentLeaderboard.push(LeaderboardEntry.from(value)));
-        let winner = fetchWinnerTag(player);
+        let winner = fetchTag(player);
         let existing = false;
         for (let entry of currentLeaderboard) {
             if (entry.tag === winner) {
@@ -164,9 +197,14 @@ class GameHandler {
         window.location.href = "index.html";
     }
 }
+
+/**
+ * Handles all actions based around cards
+ */
 class CardHandler {
-    constructor() {
-    }
+    /**
+     * Appends all sprite-sheet coordinates as Card instances to list
+     */
     collectCards() {
         for (let i = 0; i < 14; i++) {
             for (let j = 0; j < 8; j++) {
@@ -175,6 +213,9 @@ class CardHandler {
         }
         allCards.splice(4, 4);
     }
+    /**
+     * Moves *x* cards from general card list to player deck lists
+     */
     distributeCards() {
         for (let i = 0; i < cardCount; i++) {
             moveItem(allCards, cardsPlayerOne, allCards[Math.floor(Math.random() * allCards.length)]);
@@ -183,28 +224,10 @@ class CardHandler {
         cardsPlayerOne.forEach(value => this.addCardToPlayerDeck(value, value.uuid, 1));
         cardsPlayerTwo.forEach(value => this.addCardToPlayerDeck(value, value.uuid, 2));
     }
-    addCardToPlayerDeck(card, uuid, player) {
-        const html = `<li><div class='gallery-entry-pl2' id=${uuid} style='background-image: url("assets/uno_spritesheet.png"); background-position: -${card.x}px -${card.y}px'></div></li>`
-        if (player === 1) {
-            $("#deck1Cards").append(html);
-            $(`#${uuid}`).on("click", ev => this.handleCardPick(ev, player));
-        } else if (player === 2) {
-            $("#deck2Cards").append(html);
-            $(`#${uuid}`).on("click", ev => this.handleCardPick(ev, player));
-        }
-    }
-    chooseStarterCard() {
-        let card = allCards[Math.floor(Math.random() * allCards.length)];
-        while (card.getType() !== "regular") {
-            card = allCards[Math.floor(Math.random() * allCards.length)];
-        }
-        shownCard = card;
-        $("#gameStack").css("background-position", "-"+card.x+"px -" + card.y + "px");
-    }
-    updateShownCard(card) {
-        $("#gameStack").css("background-position", `-${card.x}px -${card.y}px`);
-        shownCard = card;
-    }
+    /**
+     * Draws a random card for the given player and appends it to their deck
+     * @param player
+     */
     drawCard(player) {
         let card = allCards[Math.floor(Math.random() * allCards.length)];
         if (player === 1) {
@@ -215,6 +238,56 @@ class CardHandler {
             this.addCardToPlayerDeck(card, card.uuid, player);
         }
     }
+    /**
+     * Logic for appending a card to deck
+     * @param card Instance of a Sprite
+     * @param uuid Unique id of card
+     * @param player Target player
+     */
+    addCardToPlayerDeck(card, uuid, player) {
+        const html = `<li><div class='gallery-entry-pl2' id=${uuid} style='background-image: url("assets/uno_spritesheet.png"); background-position: -${card.x}px -${card.y}px'></div></li>`
+        if (player === 1) {
+            $("#deck1Cards").append(html);
+            $(`#${uuid}`).on("click", ev => this.handleCardPick(ev, player));
+        } else if (player === 2) {
+            $("#deck2Cards").append(html);
+            $(`#${uuid}`).on("click", ev => this.handleCardPick(ev, player));
+        }
+    }
+    /**
+     * Chooses a random card to be displayed at game start
+     */
+    chooseStarterCard() {
+        let card = allCards[Math.floor(Math.random() * allCards.length)];
+        while (card.getType() !== "regular") {
+            card = allCards[Math.floor(Math.random() * allCards.length)];
+        }
+        shownCard = card;
+        $("#gameStack").css("background-position", "-"+card.x+"px -" + card.y + "px");
+    }
+    /**
+     * Sets the current relevant card
+     * @param card New card
+     */
+    updateShownCard(card) {
+        this.updateShownDisplay(card);
+        shownCard = card;
+    }
+
+    /**
+     * Sets the current card to display
+     * @param card Card to display
+     */
+    updateShownDisplay(card) {
+        $("#gameStack").css("background-position", `-${card.x}px -${card.y}px`);
+    }
+
+    /**
+     * Event handler for all present cards in decks
+     * @param event Click event
+     * @param player Player who clicked the card
+     * @returns {Promise<void>} Promise of pending color pick action
+     */
     async handleCardPick(event, player) {
         let card;
 
@@ -226,7 +299,7 @@ class CardHandler {
         if (card.getType() === "special" || card.getType() === "drawFour") {
             new bootstrap.Modal("#colorPicker").show();
             await colorHandler.awaitColorPick().then(value => {
-                forcedColor = value
+                forcedColor = value;
                 console.log(`${value} was force-picked by player ${player}`);
             });
         }
@@ -235,12 +308,37 @@ class CardHandler {
 
         player === 1 ? deckPlayer1.hide() : deckPlayer2.hide();
         this.updateShownCard(card);
+        if (card.getType() === "drawFour" || card.getType() === "special") {
+            switch (forcedColor) {
+                case "red":
+                    this.updateShownDisplay(Card.redTemplateCard);
+                    break;
+                case "yellow":
+                    this.updateShownDisplay(Card.yellowTemplateCard);
+                    break;
+                case "green":
+                    this.updateShownDisplay(Card.greenTemplateCard);
+                    break;
+                case "blue":
+                    this.updateShownDisplay(Card.blueTemplateCard);
+                    break;
+            }
+        }
         $(`#${card.uuid}`).parent().remove();
+        allCards.push(card); //Anti-Empty protection > Adds all played cards back to draw stack
 
         if (this.getCardCountOfPlayer(player) === 0) {
             gameHandler.endGame(player);
         }
     }
+
+    /**
+     * Handles the main game logic of cards
+     * @param card Clicked card
+     * @param player Player who clicked the card
+     * @param forcedColor Forced color specified in color pick action
+     * @returns {boolean} Clicked card is valid
+     */
     validateAction(card, player, forcedColor) {
         switch (shownCard.getType()) {
             case "regular":
@@ -275,6 +373,13 @@ class CardHandler {
                 } else return false;
         }
     }
+
+    /**
+     * Actions of the valid clicked card
+     * @param card Clicked card
+     * @param player Player who clicked the card
+     * @returns {boolean} Do turn switch and continue with next player
+     */
     handleCardType(card, player) { //returns: do switch turn
         switch (card.getType()) {
             case "mirror":
@@ -295,18 +400,35 @@ class CardHandler {
                 return true;
         }
     }
+
+    /**
+     *
+     * @param player Player to check
+     * @returns {jQuery|null} Count of cards of player
+     */
     getCardCountOfPlayer(player) {
-        if (player === 1) {
-            return $("#deck1Cards li").length;
-        } else if (player === 2) {
-            return $("#deck2Cards li").length;
-        } else return null;
+        if (player === 1) return $("#deck1Cards li").length;
+        else if (player === 2) return $("#deck2Cards li").length;
+        else return null;
     }
 }
+
+/**
+ * Handles the color picker with asynchronous events
+ */
 class ColorHandler {
+    /**
+     * Endpoint of chosen color event
+     * @param color Picked color
+     */
     handleButton(color) {
         forcedColorCache = color;
     }
+
+    /**
+     * Awaits the players color picker action
+     * @returns {Promise<unknown>} Picked color
+     */
     awaitColorPick() {
         return new Promise(resolve => {
             setInterval(()=>{
@@ -318,29 +440,49 @@ class ColorHandler {
         })
     }
 }
+
+/**
+ * Handles the current turn
+ */
 class TurnHandler {
     static player1 = 1;
     static player2 = 2;
+
+    /**
+     * @returns {number} Random player
+     */
     randomPlayer() {
         if (Math.random() >= 0.5) return TurnHandler.player1;
         else return TurnHandler.player2;
     }
+
+    /**
+     * Chooses random player to begin
+     */
     init() {
         currentPlayer = this.randomPlayer();
         this.updateBorder();
     }
+
+    /**
+     * Passes turn to next player
+     */
     next() {
         currentPlayer = this.getNextPlayer(currentPlayer);
         this.updateBorder();
     }
-    getPlayerTag(player) {
-        if (player === 1) return tag1;
-        else if (player === 2) return tag2;
-    }
+    /**
+     * @param player Current player
+     * @returns {number} Next player
+     */
     getNextPlayer(player) {
         if (player === 1) return 2;
         else if (player === 2) return 1;
     }
+
+    /**
+     * Highlights curren player
+     */
     updateBorder() {
         if (currentPlayer === 1) {
             if (memeMode) {
@@ -359,6 +501,10 @@ class TurnHandler {
         }
     }
 }
+
+/**
+ * Class representation of a card
+ */
 class Card {
     static regularCard = "regular";
     static skipCard = "skip";
@@ -367,18 +513,32 @@ class Card {
     static drawFourCard = "drawFour";
     static specialCard = "special";
 
+    static redTemplateCard = new Card(0, 4);
+    static yellowTemplateCard = new Card (0, 5);
+    static greenTemplateCard = new Card (0, 6);
+    static blueTemplateCard = new Card (0, 7);
+
     static redColor = "red";
     static yellowColor = "yellow";
     static greenColor = "green";
     static blueColor = "blue";
+
+    /**
+     * Creates a Card representation with calculated position
+     * @param indexX Column in sprite-sheet
+     * @param indexY Row in sprite-sheet
+     */
     constructor(indexX, indexY) {
         this.uuid = generateUUID();
         this.column = indexX;
         this.row = indexY;
         this.x = indexX * 137;
         this.y = indexY * 206;
-        this.type = this.getType();
     }
+
+    /**
+     * @returns {string} Type of card
+     */
     getType() {
         switch (this.column) {
             case 0:
@@ -404,6 +564,10 @@ class Card {
 
         }
     }
+
+    /**
+     * @returns {null|string} Color of card
+     */
     getColor() {
         if (this.column < 13) {
             switch (this.row) {
@@ -423,26 +587,55 @@ class Card {
         } else return null;
 
     }
+
+    /**
+     * @returns {boolean} Card has color
+     */
     hasColor() {
         return this.getColor() != null;
     }
+
+    /**
+     * @returns {*|null} Number value of card
+     */
     getNumber() {
         if (this.column < 10) {
             return this.column;
         } else return null;
     }
 }
+
+/**
+ * Class representation of leaderboard entry
+ */
 class LeaderboardEntry {
+    /**
+     * Creates a representation of a leaderboard entry
+     * @param tag Player TAG
+     * @param score Player score
+     * @param unix Last edit unix
+     */
     constructor(tag, score, unix) {
         this.tag = tag;
         this.score = score;
         this.date = unix;
     }
+
+    /**
+     * Creates a representation of a leaderboard entry from json
+     * @param json Json representation of element
+     * @returns {any} Class representation of entry
+     */
     static from(json){
         return Object.assign(new LeaderboardEntry(), json);
     }
 }
 //Helper functions
+/**
+ * Validates the chosen username
+ * @param str Username to check
+ * @returns {boolean} Valid username
+ */
 function isValidUsername(str) {
     return /^[a-zA-Z0-9]+([a-zA-Z0-9]([_\- ])[a-zA-Z0-9])*[a-zA-Z0-9]+$/.test(str)
 }
@@ -452,14 +645,32 @@ function isNumeric(str) {
     return !isNaN(str) &&
         !isNaN(parseFloat(str))
 }
+
+/**
+ * Moves element between lists
+ * @param source Source array list
+ * @param target Target array list
+ * @param item Element to move
+ */
 function moveItem(source, target, item) {
     source.splice(allCards.indexOf(item), 1);
     target.push(item);
 }
+
+/**
+ * Generates random uuid
+ * @returns {`${string}-${string}-${string}-${string}-${string}`} Random UUID
+ */
 function generateUUID() {
     return crypto.randomUUID();
 }
-function fetchWinnerTag(player) {
+
+/**
+ * Fetches
+ * @param player
+ * @returns {null|string}
+ */
+function fetchTag(player) {
     if (player === 1) return tag1;
     else if (player === 2) return tag2;
     else return null;
