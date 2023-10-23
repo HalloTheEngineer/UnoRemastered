@@ -46,6 +46,7 @@ body {
 .list-group {
     width: 400px;
     border-left: 3px #85929e groove;
+    overflow: hidden;
 }
 #root {
     height: 229px;

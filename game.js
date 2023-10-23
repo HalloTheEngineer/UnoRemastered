@@ -21,7 +21,7 @@ let currentLeaderboard = [];
 let deckPlayer1;
 let deckPlayer2;
 //HardCoded Features
-let memeMode = false;
+let memeMode = false; //TODO: Kennzeichnung der ForcedColor, Optionales Zurückmischen der benutzten Karten, Game Instructions, Forfeiting
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
