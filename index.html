@@ -40,10 +40,9 @@
 
         const group = document.querySelector("#root")
         if (leaderboard.length === 0) group.insertAdjacentHTML("beforeend", "<li href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\"><strong>Be the first one to set a score!</strong></h6><small class=\"opacity-75 text-nowrap\"></small></div><small class=\"opacity-50 text-nowrap\"></small></div></li>")
-        for (let item of leaderboard) {
-            group.insertAdjacentHTML("beforeend", "<li href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\"https://github.com/twbs.png\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\">"+item["tag"]+"</h6><small class=\"opacity-75 text-nowrap\">Punkte: "+item["score"]+"</small></div><small class=\"opacity-50 text-nowrap\">"+formatDate(new Date(item["date"]))+"</small></div></li>");
-        }
-
+        leaderboard.forEach((item, index) => {
+            group.insertAdjacentHTML("beforeend", "<li href=\"#\" class=\"list-group-item list-group-item-action d-flex gap-3 py-3\" aria-current=\"false\"><img src=\""+fetchIcon(index)+"\" alt=\"twbs\" width=\"32\" height=\"32\" class=\"rounded-circle flex-shrink-0\"><div class=\"d-flex gap-2 w-100 justify-content-between\"><div><h6 class=\"mb-0\">"+item["tag"]+"</h6><small class=\"opacity-75 text-nowrap\">Punkte: "+item["score"]+"</small></div><small class=\"opacity-50 text-nowrap\">"+formatDate(new Date(item["date"]))+"</small></div></li>");
+        });
     }
     function formatDate(date) {
         let dayOfMonth = date.getDate();
@@ -63,14 +62,21 @@
         hour = hour < 10 ? '0' + hour : hour;
         minutes = minutes < 10 ? '0' + minutes : minutes;
 
-        if (diffSec < 1) {
-            return 'right now';
-        } else if (diffMin < 1) {
-            return `${Math.round(diffSec)} sec. ago`
-        } else if (diffHour < 1) {
-            return `${Math.round(diffMin)} min. ago`
-        } else {
-            return `${dayOfMonth}.${month}.${year} ${hour}:${Math.round(minutes)}`
+        if (diffSec < 1)  return 'right now';
+        else if (diffMin < 1) return `${Math.round(diffSec)} sec. ago`
+        else if (diffHour < 1) return `${Math.round(diffMin)} min. ago`
+        else return `${dayOfMonth}.${month}.${year} ${hour}:${Math.round(minutes)}`;
+    }
+    function fetchIcon(index) {
+        switch (index) {
+            case 0:
+                return "assets/winner_gold.png"
+            case 1:
+                return "assets/winner_silver.png"
+            case 2:
+                return "assets/winner_bronze.png"
+            default:
+                return "assets/uno_icon.png"
         }
     }
 </script>

@@ -35,7 +35,7 @@ let deckPlayer1;
 let deckPlayer2;
 //HardCoded Features
 let memeMode = false;
-//TODO: Game Instructions; Winning/Loosing animation w/ forfeit impl; leaderboard images; config gui > Stacking, meme mode, etc.;
+//TODO: Winning/Loosing animation w/ forfeit impl; config gui > Stacking, meme mode, etc.;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
