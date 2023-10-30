@@ -3,6 +3,10 @@ WICHTIG: Für die Funktionalität des Leaderboards muss die Website auf einem Se
 da der lokale Speicher hier für alle auf dem Server geöffneten Seiten gilt.
 Das Spielen ist auch ohne Server und somit ohne Leaderboard möglich.
 
+Notizen:
+    - Angezeigte Sprites (Karten) teilweise durch Ungenauigkeiten (Überlappungen der Kanten der Karten) im Spritesheet nicht akkurat
+    -
+
 Aufbau des Codes:
     1. Variablen
     2. Startvorbereitungen
