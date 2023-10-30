@@ -1,7 +1,7 @@
 /*
 WICHTIG: Für die Funktionalität des Leaderboards muss die Website auf einem Server gehostet werden,
-da der lokale Speicher hier für alle auf dem Server geöffneten Seiten gilt. Das Spielen ist auch ohne Server möglich,
-wobei auf das Leaderboard verzichtet werden muss.
+da der lokale Speicher hier für alle auf dem Server geöffneten Seiten gilt.
+Das Spielen ist auch ohne Server und somit ohne Leaderboard möglich.
 
 Aufbau des Codes:
     1. Variablen
@@ -380,7 +380,7 @@ class CardHandler {
      * @param player Player who clicked the card
      * @returns {boolean} Do turn switch and continue with next player
      */
-    handleCardType(card, player) { //returns: do switch turn
+    handleCardType(card, player) {
         switch (card.getType()) {
             case "mirror":
                 return false;
