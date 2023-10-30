@@ -37,13 +37,17 @@ let currentLeaderboard = [];
 //Style
 let deckPlayer1;
 let deckPlayer2;
+//Game Statistics
+let cardsPlayed = 0;
+let cardsDrawn = 0;
+let initialTime = Date.now();
 //HardCoded Features
 let memeMode = false;
 //TODO: Winning/Loosing animation w/ forfeit impl; config gui > Stacking, meme mode, etc.;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
-    if (params.has("tag1") && params.has("tag2") && params.has("cardcount") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount"))) {
+    if (params.has("tag1") && params.has("tag2") && params.has("cardcount") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount")) && parseInt(params.get("cardcount")) <= 50) {
         tag1 = params.get("tag1");
         tag2 = params.get("tag2");
         cardCount = params.get("cardcount");
@@ -116,6 +120,9 @@ $(document).ready(() => {
                 turnHandler.next();
             }
         }
+    });
+    $("#mainMenu").on("click", () => {
+        window.location.href = "index.html";
     });
     //forfeit events
     $("#forfeit-p1").on("click", () => {
@@ -197,8 +204,48 @@ class GameHandler {
         }));
 
         localStorage.setItem("leaderboard", JSON.stringify(newList));
+        $("#winningPlayer").html(`Winner: <strong>${winner}</strong>`);
+        $("#cardsDrawn").html(cardsDrawn);
+        $("#cardsPlayed").html(cardsPlayed);
+        $("#minutedPlayed").html(new Date(Date.now()-initialTime).getMinutes());
 
-        window.location.href = "index.html";
+        //Confetti Effect
+        let count = 300;
+        let defaults = {
+            origin: { y: 0.7 }
+        };
+
+        function fire(particleRatio, opts) {
+            confetti({
+                ...defaults,
+                ...opts,
+                particleCount: Math.floor(count * particleRatio)
+            });
+        }
+
+        fire(0.25, {
+            spread: 26,
+            startVelocity: 55,
+        });
+        fire(0.2, {
+            spread: 60,
+        });
+        fire(0.35, {
+            spread: 100,
+            decay: 0.91,
+            scalar: 0.8
+        });
+        fire(0.1, {
+            spread: 120,
+            startVelocity: 25,
+            decay: 0.92,
+            scalar: 1.2
+        });
+        fire(0.1, {
+            spread: 120,
+            startVelocity: 45,
+        });
+        setTimeout(() => new bootstrap.Modal("#endScreen").show(), 5000);
     }
 }
 
@@ -233,6 +280,7 @@ class CardHandler {
      * @param player
      */
     drawCard(player) {
+        cardsDrawn++;
         let card = allCards[Math.floor(Math.random() * allCards.length)];
         if (player === 1) {
             moveItem(allCards, cardsPlayerOne, card);
@@ -330,7 +378,7 @@ class CardHandler {
         }
         $(`#${card.uuid}`).parent().remove();
         allCards.push(card); //Anti-Empty protection > Adds all played cards back to draw stack
-
+        cardsPlayed++;
         if (this.getCardCountOfPlayer(player) === 0) {
             gameHandler.endGame(player);
         }
@@ -346,7 +394,7 @@ class CardHandler {
     validateAction(card, player, forcedColor) {
         switch (shownCard.getType()) {
             case "regular":
-                if ((!card.hasColor() || shownCard.getColor() === card.getColor()) || (shownCard.getNumber() === card.getNumber())) {
+                if ((!card.hasColor() || shownCard.getColor() === card.getColor()) || shownCard.getNumber() === card.getNumber()) {
                     if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
@@ -366,7 +414,7 @@ class CardHandler {
                     return true;
                 } else return false;
             case "drawFour":
-                if (forcedColor !== undefined && card.getColor() === forcedColor) {
+                if (card.getColor() === forcedColor) {
                     if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
@@ -679,3 +727,8 @@ function fetchTag(player) {
     else if (player === 2) return tag2;
     else return null;
 }
+
+/**
+ * @param date Initial Date
+ * @returns {string} String representation of elapsed time
+ */
