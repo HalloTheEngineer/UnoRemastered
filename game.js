@@ -43,14 +43,14 @@ let cardsDrawn = 0;
 let initialTime = Date.now();
 //HardCoded Features
 let memeMode = false;
-//TODO: Winning/Loosing animation w/ forfeit impl; config gui > Stacking, meme mode, etc.;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
-    if (params.has("tag1") && params.has("tag2") && params.has("cardcount") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount")) && parseInt(params.get("cardcount")) <= 50) {
+    if (params.has("tag1") && params.has("tag2") && params.has("mememode") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount")) && parseInt(params.get("cardcount")) <= 50) {
         tag1 = params.get("tag1");
         tag2 = params.get("tag2");
         cardCount = params.get("cardcount");
+        memeMode = params.has("mememode");
     } else {
         window.location.href = "config.html?rejected=true";
     }
@@ -347,8 +347,7 @@ class CardHandler {
 
         if (player === 1) card = cardsPlayerOne.filter(value => value.uuid === event.target.id)[0];
         else if (player === 2) card = cardsPlayerTwo.filter(value => value.uuid === event.target.id)[0];
-
-        if (card.getType() === "special" || card.getType() === "drawFour") {
+        if ((card.getType() === "special" || card.getType() === "drawFour") && (shownCard !== "drawFour" || shownCard !== "special")) {
             new bootstrap.Modal("#colorPicker").show();
             await colorHandler.awaitColorPick().then(value => {
                 forcedColor = value;
@@ -357,6 +356,7 @@ class CardHandler {
         }
 
         if (!this.validateAction(card, player, forcedColor)) return;
+
 
         player === 1 ? deckPlayer1.hide() : deckPlayer2.hide();
         this.updateShownCard(card);
@@ -414,11 +414,13 @@ class CardHandler {
                     return true;
                 } else return false;
             case "drawFour":
+                if (!card.hasColor()) return false;
                 if (card.getColor() === forcedColor) {
                     if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
                 } else return false;
             case "special":
+                if (!card.hasColor()) return false;
                 if (card.getColor() === forcedColor) {
                     if (this.handleCardType(card, player)) turnHandler.next();
                     return true;
@@ -440,12 +442,12 @@ class CardHandler {
                 return false;
             case "drawTwo":
                 for (let i = 0; i < 2; i++) {
-                    this.drawCard(turnHandler.getNextPlayer(player))
+                    this.drawCard(turnHandler.getNextPlayer(player));
                 }
                 return true;
             case "drawFour":
                 for (let i = 0; i < 4; i++) {
-                    this.drawCard(turnHandler.getNextPlayer(player))
+                    this.drawCard(turnHandler.getNextPlayer(player));
                 }
                 return true;
             default:
@@ -540,15 +542,15 @@ class TurnHandler {
             if (memeMode) {
                 $("#soypointimg").css("transform", "scaleX(1)");
             } else {
-                $("#deck1").css("border-color", "slategray");
-                $("#deck2").css("border-color", "transparent");
+                $("#deck1").css("filter", "opacity(1");
+                $("#deck2").css("filter", "opacity(0.5)");
             }
         } else if (currentPlayer === 2) {
             if (memeMode) {
                 $("#soypointimg").css("transform", "scaleX(-1)");
             } else {
-                $("#deck1").css("border-color", "transparent");
-                $("#deck2").css("border-color", "slategray");
+                $("#deck1").css("filter", "opacity(0.5)");
+                $("#deck2").css("filter", "opacity(1)");
             }
         }
     }
