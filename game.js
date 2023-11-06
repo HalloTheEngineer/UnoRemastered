@@ -46,7 +46,7 @@ let memeMode = false;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
-    if (params.has("tag1") && params.has("tag2") && params.has("mememode") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount")) && parseInt(params.get("cardcount")) <= 50) {
+    if (params.has("tag1") && params.has("tag2") && params.has("cardcount") && isValidUsername(params.get("tag1")) && isValidUsername(params.get("tag2")) && params.get("tag1") !== params.get("tag2") && isNumeric(params.get("cardcount")) && parseInt(params.get("cardcount")) <= 50) {
         tag1 = params.get("tag1");
         tag2 = params.get("tag2");
         cardCount = params.get("cardcount");
