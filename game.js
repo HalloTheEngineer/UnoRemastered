@@ -2,6 +2,7 @@
 WICHTIG: Für die Funktionalität des Leaderboards muss die Website auf einem Server gehostet werden,
 da der lokale Speicher hier für alle auf dem Server geöffneten Seiten gilt.
 Das Spielen ist auch ohne Server und somit ohne Leaderboard möglich.
+Für die richtige Darstellung der Grafiken sollte Firefox oder Edge verwendet werden. 
 
 Notizen:
     - Angezeigte Sprites (Karten) teilweise durch Ungenauigkeiten (Überlappungen der Kanten der Karten) im Spritesheet nicht akkurat
@@ -30,6 +31,7 @@ let currentPlayer;
 let shownCard;
 let forcedColorCache;
 let forcedColor;
+let endGame = false;
 //Arrays
 let allCards = [];
 let cardsPlayerOne = [];
@@ -171,6 +173,9 @@ class GameHandler {
      * @param player The player who won.
      */
     endGame(player) {
+        if (!endGame) {
+            endGame = true;
+        } else return;
         if (localStorage.getItem("leaderboard") == null) {
             const noPlayers = {
                 "players": []
