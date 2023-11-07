@@ -5,7 +5,7 @@ Das Spielen ist auch ohne Server und somit ohne Leaderboard möglich.
 
 Notizen:
     - Angezeigte Sprites (Karten) teilweise durch Ungenauigkeiten (Überlappungen der Kanten der Karten) im Spritesheet nicht akkurat
-    -
+    - HTML soll nicht im Vordergrund stehen
 
 Aufbau des Codes:
     1. Variablen
@@ -19,6 +19,7 @@ Aufbau des Codes:
 let tag1 = "";
 let tag2 = "";
 let cardCount = 7;
+let memeMode = false;
 //Handler Classes
 let gameHandler;
 let cardHandler;
@@ -41,8 +42,6 @@ let deckPlayer2;
 let cardsPlayed = 0;
 let cardsDrawn = 0;
 let initialTime = Date.now();
-//HardCoded Features
-let memeMode = false;
 
 window.onload = () => {
     const params = new URLSearchParams(document.location.search);
